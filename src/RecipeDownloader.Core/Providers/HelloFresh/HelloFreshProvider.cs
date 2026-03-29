@@ -1,3 +1,5 @@
+using System.Text.Json;
+using RecipeDownloader.Core.Export;
 using RecipeDownloader.Core.Models;
 
 namespace RecipeDownloader.Core.Providers.HelloFresh;
@@ -5,8 +7,13 @@ namespace RecipeDownloader.Core.Providers.HelloFresh;
 public class HelloFreshProvider : IRecipeProvider
 {
     private const string SitemapUrlTemplate = "https://www.hellofresh.com/pages/sitemap/recipes-{0}";
-    private const int MaxConcurrency = 4;
-    private static readonly TimeSpan ThrottleDelay = TimeSpan.FromMilliseconds(300);
+    private const int MaxConcurrency = 80;
+
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        WriteIndented = true,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
 
     private readonly HttpClient _httpClient;
     private readonly string[] _letters;
@@ -24,34 +31,33 @@ public class HelloFreshProvider : IRecipeProvider
         IProgress<DiscoveryProgress>? progress = null,
         CancellationToken ct = default)
     {
-        var allRecipes = new List<Recipe>();
+        // Fetch all sitemaps in parallel
+        progress?.Report(new DiscoveryProgress("Fetching sitemaps", 0, _letters.Length));
 
-        foreach (var letter in _letters)
+        var sitemapTasks = _letters.Select(async letter =>
         {
-            ct.ThrowIfCancellationRequested();
-
             var url = string.Format(SitemapUrlTemplate, letter);
-            progress?.Report(new DiscoveryProgress("Fetching sitemap", 0, 0, $"recipes-{letter}"));
-
-            string html;
             try
             {
-                html = await _httpClient.GetStringAsync(url, ct);
+                var html = await _httpClient.GetStringAsync(url, ct);
+                var stubs = HelloFreshScraper.ParseRecipeLinksFromSitemap(html);
+                progress?.Report(new DiscoveryProgress("Fetching sitemaps", 0, _letters.Length, $"recipes-{letter}: {stubs.Count} found"));
+                return stubs;
             }
             catch (HttpRequestException ex)
             {
                 progress?.Report(new DiscoveryProgress("Error", 0, 0, $"Failed to fetch sitemap for '{letter}': {ex.Message}"));
-                continue;
+                return new List<Recipe>();
             }
+        });
 
-            var stubs = HelloFreshScraper.ParseRecipeLinksFromSitemap(html);
-            progress?.Report(new DiscoveryProgress("Resolving PDFs", 0, stubs.Count, $"Found {stubs.Count} recipes for '{letter}'"));
+        var sitemapResults = await Task.WhenAll(sitemapTasks);
+        var allStubs = sitemapResults.SelectMany(s => s).ToList();
 
-            var resolved = await ResolveRecipePdfUrlsAsync(stubs, progress, ct);
-            allRecipes.AddRange(resolved);
-        }
+        progress?.Report(new DiscoveryProgress("Resolving PDFs", 0, allStubs.Count, $"Found {allStubs.Count} recipes total"));
 
-        return allRecipes;
+        // Resolve all PDF URLs in parallel across all letters
+        return await ResolveRecipePdfUrlsAsync(allStubs, progress, ct);
     }
 
     public async Task<string> DownloadRecipeAsync(
@@ -64,14 +70,37 @@ public class HelloFreshProvider : IRecipeProvider
 
         Directory.CreateDirectory(outputDirectory);
 
-        var fileName = SanitizeFileName(recipe.Name) + ".pdf";
-        var filePath = Path.Combine(outputDirectory, fileName);
+        var baseName = SanitizeFileName(recipe.Name);
 
+        // Download PDF
+        var pdfPath = Path.Combine(outputDirectory, baseName + ".pdf");
         await using var response = await _httpClient.GetStreamAsync(recipe.PdfUrl, ct);
-        await using var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None);
+        await using var fileStream = new FileStream(pdfPath, FileMode.Create, FileAccess.Write, FileShare.None);
         await response.CopyToAsync(fileStream, ct);
 
-        return filePath;
+        // Fetch the recipe page and parse structured data into JSON + HTML
+        try
+        {
+            var html = await _httpClient.GetStringAsync(recipe.SourceUrl, ct);
+            var recipeData = HelloFreshScraper.ParseRecipeDataFromPage(html, recipe.SourceUrl);
+
+            if (recipeData is not null)
+            {
+                var jsonPath = Path.Combine(outputDirectory, baseName + ".json");
+                var json = JsonSerializer.Serialize(recipeData, JsonOptions);
+                await File.WriteAllTextAsync(jsonPath, json, ct);
+
+                var htmlContent = RecipeHtmlGenerator.Generate(recipeData);
+                var htmlPath = Path.Combine(outputDirectory, baseName + ".html");
+                await File.WriteAllTextAsync(htmlPath, htmlContent, ct);
+            }
+        }
+        catch
+        {
+            // Structured data extraction is best-effort; the PDF is the primary artifact
+        }
+
+        return pdfPath;
     }
 
     private async Task<List<Recipe>> ResolveRecipePdfUrlsAsync(
@@ -90,7 +119,6 @@ public class HelloFreshProvider : IRecipeProvider
             try
             {
                 ct.ThrowIfCancellationRequested();
-                await Task.Delay(ThrottleDelay, ct);
 
                 string html;
                 try
