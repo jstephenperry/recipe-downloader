@@ -1,0 +1,76 @@
+<UserControl x:Class="RecipeDownloader.App.Views.RecipeDetailView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="clr-namespace:RecipeDownloader.App.Converters"
+             xmlns:vm="clr-namespace:RecipeDownloader.App.ViewModels">
+    <UserControl.Resources>
+        <converters:DownloadStatusToTextConverter x:Key="StatusToText"/>
+        <converters:DownloadStatusToColorConverter x:Key="StatusToColor"/>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVis"/>
+    </UserControl.Resources>
+
+    <Border Padding="12" Background="#FAFAFA" BorderBrush="#DDD" BorderThickness="0,1,0,0">
+        <Grid DataContext="{Binding}">
+            <TextBlock Text="Select a recipe to see details"
+                       VerticalAlignment="Center" HorizontalAlignment="Center"
+                       Foreground="Gray" FontStyle="Italic">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding}" Value="{x:Null}">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+
+            <StackPanel>
+                <StackPanel.Style>
+                    <Style TargetType="StackPanel">
+                        <Setter Property="Visibility" Value="Visible"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding}" Value="{x:Null}">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </StackPanel.Style>
+
+                <TextBlock Text="{Binding Name}" FontSize="16" FontWeight="Bold" TextWrapping="Wrap" Margin="0,0,0,8"/>
+
+                <TextBlock Text="{Binding Status, Converter={StaticResource StatusToText}}"
+                           Foreground="{Binding Status, Converter={StaticResource StatusToColor}}"
+                           FontWeight="SemiBold" Margin="0,0,0,12"/>
+
+                <TextBlock Text="Source URL" FontWeight="SemiBold" Margin="0,0,0,2"/>
+                <Button Content="{Binding SourceUrl}" Command="{Binding OpenInBrowserCommand}"
+                        Style="{StaticResource LinkButton}" Margin="0,0,0,8"/>
+
+                <TextBlock Text="PDF URL" FontWeight="SemiBold" Margin="0,0,0,2"/>
+                <TextBlock Text="No PDF available" Foreground="Gray" FontStyle="Italic"
+                           Visibility="{Binding HasPdf, Converter={StaticResource BoolToVis}, ConverterParameter=invert}"/>
+                <Button Content="{Binding PdfUrl}" Command="{Binding OpenPdfInBrowserCommand}"
+                        Style="{StaticResource LinkButton}" Margin="0,0,0,8"
+                        Visibility="{Binding HasPdf, Converter={StaticResource BoolToVis}}"/>
+
+                <TextBlock Text="Local File" FontWeight="SemiBold" Margin="0,0,0,2"
+                           Visibility="{Binding HasLocalFile, Converter={StaticResource BoolToVis}}"/>
+                <Button Content="{Binding LocalFilePath}" Command="{Binding OpenLocalFileCommand}"
+                        Style="{StaticResource LinkButton}" Margin="0,0,0,8"
+                        Visibility="{Binding HasLocalFile, Converter={StaticResource BoolToVis}}"/>
+
+                <TextBlock Text="JSON Data" FontWeight="SemiBold" Margin="0,0,0,2"
+                           Visibility="{Binding HasLocalJson, Converter={StaticResource BoolToVis}}"/>
+                <Button Content="{Binding LocalJsonPath}" Command="{Binding OpenLocalJsonCommand}"
+                        Style="{StaticResource LinkButton}" Margin="0,0,0,8"
+                        Visibility="{Binding HasLocalJson, Converter={StaticResource BoolToVis}}"/>
+
+                <TextBlock Text="{Binding ErrorMessage}" Foreground="Red" TextWrapping="Wrap"
+                           Visibility="{Binding ErrorMessage, Converter={StaticResource BoolToVis}}"
+                           Margin="0,4,0,0"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>
