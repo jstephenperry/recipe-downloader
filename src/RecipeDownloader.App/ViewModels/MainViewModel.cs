@@ -3,6 +3,9 @@ using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
+using RecipeDownloader.Core.Matching;
+using RecipeDownloader.Core.Models;
+using RecipeDownloader.Core.Storage;
 
 namespace RecipeDownloader.App.ViewModels;
 
@@ -21,6 +24,25 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private string _outputDirectory = "";
 
+    // Navigation state
+    [ObservableProperty]
+    private string _activeView = "Recipes";
+
+    [ObservableProperty]
+    private PantryViewModel? _pantryViewModel;
+
+    [ObservableProperty]
+    private ProteinPickerViewModel? _proteinPickerViewModel;
+
+    [ObservableProperty]
+    private RecipeMatchViewModel? _recipeMatchViewModel;
+
+    [ObservableProperty]
+    private GroceryListViewModel? _groceryListViewModel;
+
+    private PantryStore? _pantryStore;
+    private List<RecipeData> _allRecipeData = [];
+
     public MainViewModel()
     {
         LoadSettings();
@@ -30,6 +52,48 @@ public partial class MainViewModel : ObservableObject
     {
         Providers.Add(provider);
         SelectedProvider ??= provider;
+    }
+
+    public void SetPantryStore(PantryStore store)
+    {
+        _pantryStore = store;
+        PantryViewModel = new PantryViewModel(store);
+    }
+
+    public void SetRecipeData(List<RecipeData> recipeData)
+    {
+        _allRecipeData = recipeData;
+    }
+
+    [RelayCommand]
+    private void NavigateTo(string viewName)
+    {
+        ActiveView = viewName;
+
+        if (viewName == "MealPlanner" && ProteinPickerViewModel is null)
+        {
+            ProteinPickerViewModel = new ProteinPickerViewModel(
+                _allRecipeData,
+                OnProteinsSelected);
+            ProteinPickerViewModel.LoadProteinsCommand.Execute(null);
+        }
+    }
+
+    private void OnProteinsSelected(string protein1, string protein2)
+    {
+        var pantry = PantryViewModel?.Inventory ?? new PantryInventory();
+        RecipeMatchViewModel = new RecipeMatchViewModel(
+            _allRecipeData, pantry, OnPairSelected);
+        RecipeMatchViewModel.FindMatches(protein1, protein2);
+        ActiveView = "RecipeMatch";
+    }
+
+    private void OnPairSelected(RecipePairMatch pair)
+    {
+        var pantry = PantryViewModel?.Inventory ?? new PantryInventory();
+        GroceryListViewModel = new GroceryListViewModel();
+        GroceryListViewModel.Generate(pair, pantry);
+        ActiveView = "GroceryList";
     }
 
     [RelayCommand]
