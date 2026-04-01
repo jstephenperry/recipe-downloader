@@ -1,0 +1,47 @@
+<UserControl x:Class="RecipeDownloader.App.Views.ProteinPickerView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:RecipeDownloader.App.ViewModels">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="Select Core Proteins" Style="{StaticResource SectionHeader}" FontSize="18"/>
+        <TextBlock Grid.Row="1" Text="Choose up to 2 proteins to find recipe pairs with overlapping ingredients."
+                   Foreground="Gray" Margin="0,0,0,10"/>
+
+        <DataGrid Grid.Row="2"
+                  ItemsSource="{Binding Proteins}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="False"
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  SelectionMode="Single"
+                  GridLinesVisibility="Horizontal"
+                  AlternatingRowBackground="#F8F8F8"
+                  RowHeight="36"
+                  VerticalScrollBarVisibility="Auto">
+            <DataGrid.Columns>
+                <DataGridCheckBoxColumn Header="" Binding="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" Width="40"/>
+                <DataGridTextColumn Header="Protein" Binding="{Binding CanonicalName}" Width="120" IsReadOnly="True"
+                                    FontWeight="SemiBold"/>
+                <DataGridTextColumn Header="Recipes" Binding="{Binding RecipeCount}" Width="70" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Variants" Binding="{Binding VariantsDisplay}" Width="*" IsReadOnly="True"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <WrapPanel Grid.Row="3" Margin="0,10,0,0">
+            <Button Content="Load Proteins" Command="{Binding LoadProteinsCommand}"
+                    Style="{StaticResource ActionButton}"/>
+            <Button Content="Find Matching Recipes" Command="{Binding FindMatchingRecipesCommand}"
+                    Style="{StaticResource ActionButton}" FontWeight="SemiBold"/>
+        </WrapPanel>
+
+        <TextBlock Grid.Row="4" Text="{Binding StatusText}" Margin="0,6,0,0" Foreground="Gray"/>
+    </Grid>
+</UserControl>
