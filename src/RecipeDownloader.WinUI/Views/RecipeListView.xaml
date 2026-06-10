@@ -1,0 +1,94 @@
+<UserControl
+    x:Class="RecipeDownloader.WinUI.Views.RecipeListView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:RecipeDownloader.ViewModels">
+
+    <Grid RowSpacing="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Action Bar -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4">
+            <Button Content="Discover Recipes" Command="{Binding DiscoverCommand}"
+                    Style="{StaticResource ActionButton}" />
+            <Button Content="Download Selected" Command="{Binding DownloadSelectedCommand}"
+                    Style="{StaticResource ActionButton}" />
+            <Button Content="Download All" Command="{Binding DownloadAllCommand}"
+                    Style="{StaticResource ActionButton}" />
+            <Button Content="Cancel" Command="{Binding CancelOperationCommand}"
+                    Style="{StaticResource ActionButton}"
+                    Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}" />
+            <Button Content="Select All" Command="{Binding SelectAllCommand}"
+                    Style="{StaticResource ActionButton}" MinWidth="80" />
+            <Button Content="Select None" Command="{Binding SelectNoneCommand}"
+                    Style="{StaticResource ActionButton}" MinWidth="80" />
+        </StackPanel>
+
+        <!-- Column headers -->
+        <Grid Grid.Row="1" Padding="16,4,16,4"
+              Background="{ThemeResource LayerFillColorDefaultBrush}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="40" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="60" />
+                <ColumnDefinition Width="120" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="1" Text="Recipe Name" FontWeight="SemiBold" />
+            <TextBlock Grid.Column="2" Text="PDF" FontWeight="SemiBold" />
+            <TextBlock Grid.Column="3" Text="Status" FontWeight="SemiBold" />
+        </Grid>
+
+        <!-- Recipe list -->
+        <ListView Grid.Row="2"
+                  ItemsSource="{Binding Recipes}"
+                  SelectedItem="{Binding SelectedRecipe, Mode=TwoWay}"
+                  SelectionMode="Single">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                    <Setter Property="MinHeight" Value="36" />
+                </Style>
+            </ListView.ItemContainerStyle>
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="vm:RecipeViewModel">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="40" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="60" />
+                            <ColumnDefinition Width="120" />
+                        </Grid.ColumnDefinitions>
+                        <CheckBox Grid.Column="0" IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                  MinWidth="0" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center"
+                                   TextTrimming="CharacterEllipsis" />
+                        <TextBlock Grid.Column="2" Text="{Binding HasPdf}" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="3"
+                                   Text="{Binding Status, Converter={StaticResource StatusToText}}"
+                                   Foreground="{Binding Status, Converter={StaticResource StatusToColor}}"
+                                   VerticalAlignment="Center" />
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <!-- Status / Progress -->
+        <Grid Grid.Row="3" ColumnSpacing="8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="200" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="{Binding StatusText}" VerticalAlignment="Center"
+                       TextTrimming="CharacterEllipsis" />
+            <ProgressBar Grid.Column="1"
+                         Value="{Binding ProgressValue}" Maximum="{Binding ProgressMax}"
+                         IsIndeterminate="{Binding IsProgressIndeterminate}"
+                         Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}" />
+        </Grid>
+    </Grid>
+</UserControl>

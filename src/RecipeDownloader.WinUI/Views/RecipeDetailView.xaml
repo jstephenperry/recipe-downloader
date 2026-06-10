@@ -1,0 +1,52 @@
+<UserControl
+    x:Class="RecipeDownloader.WinUI.Views.RecipeDetailView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Border Padding="12" Background="{ThemeResource LayerFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="0,1,0,0">
+        <Grid>
+            <TextBlock Text="Select a recipe to see details"
+                       VerticalAlignment="Center" HorizontalAlignment="Center"
+                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontStyle="Italic"
+                       Visibility="{Binding Converter={StaticResource NullToVis}, ConverterParameter=invert}" />
+
+            <ScrollViewer Visibility="{Binding Converter={StaticResource NullToVis}}">
+                <StackPanel Spacing="4">
+                    <TextBlock Text="{Binding Name}" FontSize="16" FontWeight="Bold" TextWrapping="Wrap" />
+
+                    <TextBlock Text="{Binding Status, Converter={StaticResource StatusToText}}"
+                               Foreground="{Binding Status, Converter={StaticResource StatusToColor}}"
+                               FontWeight="SemiBold" Margin="0,0,0,8" />
+
+                    <TextBlock Text="Source URL" FontWeight="SemiBold" />
+                    <HyperlinkButton Content="{Binding SourceUrl}" Command="{Binding OpenInBrowserCommand}"
+                                     Padding="0" Margin="0,0,0,4" />
+
+                    <TextBlock Text="PDF URL" FontWeight="SemiBold" />
+                    <TextBlock Text="No PDF available" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               FontStyle="Italic"
+                               Visibility="{Binding HasPdf, Converter={StaticResource BoolToVis}, ConverterParameter=invert}" />
+                    <HyperlinkButton Content="{Binding PdfUrl}" Command="{Binding OpenPdfInBrowserCommand}"
+                                     Padding="0" Margin="0,0,0,4"
+                                     Visibility="{Binding HasPdf, Converter={StaticResource BoolToVis}}" />
+
+                    <TextBlock Text="Local File" FontWeight="SemiBold"
+                               Visibility="{Binding HasLocalFile, Converter={StaticResource BoolToVis}}" />
+                    <HyperlinkButton Content="{Binding LocalFilePath}" Command="{Binding OpenLocalFileCommand}"
+                                     Padding="0" Margin="0,0,0,4"
+                                     Visibility="{Binding HasLocalFile, Converter={StaticResource BoolToVis}}" />
+
+                    <TextBlock Text="JSON Data" FontWeight="SemiBold"
+                               Visibility="{Binding HasLocalJson, Converter={StaticResource BoolToVis}}" />
+                    <HyperlinkButton Content="{Binding LocalJsonPath}" Command="{Binding OpenLocalJsonCommand}"
+                                     Padding="0" Margin="0,0,0,4"
+                                     Visibility="{Binding HasLocalJson, Converter={StaticResource BoolToVis}}" />
+
+                    <TextBlock Text="{Binding ErrorMessage}" Foreground="Red" TextWrapping="Wrap"
+                               Visibility="{Binding ErrorMessage, Converter={StaticResource NullToVis}}" />
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </Border>
+</UserControl>

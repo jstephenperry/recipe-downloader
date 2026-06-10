@@ -1,7 +1,7 @@
 using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Media;
-using RecipeDownloader.App.ViewModels;
+using RecipeDownloader.ViewModels;
 
 namespace RecipeDownloader.App.Converters;
 

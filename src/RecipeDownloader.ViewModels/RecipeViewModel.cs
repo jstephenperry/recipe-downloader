@@ -3,7 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using RecipeDownloader.Core.Models;
 
-namespace RecipeDownloader.App.ViewModels;
+namespace RecipeDownloader.ViewModels;
 
 public partial class RecipeViewModel : ObservableObject
 {

@@ -1,13 +1,12 @@
 using System.Net.Http;
-using System.Text.Json;
 using System.Windows;
 using System.Windows.Threading;
-using RecipeDownloader.App.ViewModels;
+using RecipeDownloader.App.Services;
 using RecipeDownloader.App.Views;
-using RecipeDownloader.Core.Models;
 using RecipeDownloader.Core.Providers.BlueApron;
 using RecipeDownloader.Core.Providers.HelloFresh;
 using RecipeDownloader.Core.Storage;
+using RecipeDownloader.ViewModels;
 
 namespace RecipeDownloader.App;
 
@@ -35,7 +34,7 @@ public partial class App : Application
         var catalogStore = new RecipeCatalogStore(dataDir);
         var pantryStore = new PantryStore(dataDir);
 
-        var mainVm = new MainViewModel();
+        var mainVm = new MainViewModel(new WpfFolderPickerService(), new WpfClipboardService());
         mainVm.SetPantryStore(pantryStore);
 
         // Register providers — all letters A-Z
@@ -75,44 +74,8 @@ public partial class App : Application
         }
 
         // Load recipe data from downloaded JSON files for meal planning
-        var recipeData = await LoadRecipeDataAsync(mainVm.GetOutputDirectory());
+        var recipeData = await RecipeDataLoader.LoadAllAsync(mainVm.GetOutputDirectory());
         mainVm.SetRecipeData(recipeData);
-    }
-
-    private static async Task<List<RecipeData>> LoadRecipeDataAsync(string outputDir)
-    {
-        var recipes = new List<RecipeData>();
-
-        if (!Directory.Exists(outputDir))
-            return recipes;
-
-        var jsonOptions = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        };
-
-        foreach (var jsonFile in Directory.EnumerateFiles(outputDir, "*.json", SearchOption.AllDirectories))
-        {
-            try
-            {
-                // Skip catalog/settings files
-                var fileName = Path.GetFileName(jsonFile);
-                if (fileName is "settings.json" or "pantry.json" ||
-                    fileName.EndsWith("Catalog.json", StringComparison.OrdinalIgnoreCase))
-                    continue;
-
-                await using var stream = File.OpenRead(jsonFile);
-                var data = await JsonSerializer.DeserializeAsync<RecipeData>(stream, jsonOptions);
-                if (data is not null && !string.IsNullOrEmpty(data.Title) && data.Ingredients.Count > 0)
-                    recipes.Add(data);
-            }
-            catch
-            {
-                // Skip files that aren't valid RecipeData JSON
-            }
-        }
-
-        return recipes;
     }
 
     private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)

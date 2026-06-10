@@ -1,8 +1,7 @@
 <UserControl x:Class="RecipeDownloader.App.Views.RecipeListView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:converters="clr-namespace:RecipeDownloader.App.Converters"
-             xmlns:vm="clr-namespace:RecipeDownloader.App.ViewModels">
+             xmlns:converters="clr-namespace:RecipeDownloader.App.Converters">
     <UserControl.Resources>
         <converters:DownloadStatusToTextConverter x:Key="StatusToText"/>
         <converters:DownloadStatusToColorConverter x:Key="StatusToColor"/>

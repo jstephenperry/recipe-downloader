@@ -4,7 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using RecipeDownloader.Core.Classification;
 using RecipeDownloader.Core.Models;
 
-namespace RecipeDownloader.App.ViewModels;
+namespace RecipeDownloader.ViewModels;
 
 public partial class ProteinPickerViewModel : ObservableObject
 {

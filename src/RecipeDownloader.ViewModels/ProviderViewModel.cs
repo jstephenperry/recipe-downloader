@@ -5,7 +5,7 @@ using RecipeDownloader.Core.Models;
 using RecipeDownloader.Core.Providers;
 using RecipeDownloader.Core.Storage;
 
-namespace RecipeDownloader.App.ViewModels;
+namespace RecipeDownloader.ViewModels;
 
 public partial class ProviderViewModel : ObservableObject
 {

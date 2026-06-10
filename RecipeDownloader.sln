@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
@@ -8,6 +8,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecipeDownloader.Core", "src\RecipeDownloader.Core\RecipeDownloader.Core.csproj", "{0A058F70-3D0E-4CA4-9D43-A3F55E110A7C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecipeDownloader.App", "src\RecipeDownloader.App\RecipeDownloader.App.csproj", "{047045CD-41C2-4CC4-8C13-FD039F263BCC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecipeDownloader.ViewModels", "src\RecipeDownloader.ViewModels\RecipeDownloader.ViewModels.csproj", "{3F2B6E91-7C44-4D2A-9A1E-5B8C0D6F4A21}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecipeDownloader.WinUI", "src\RecipeDownloader.WinUI\RecipeDownloader.WinUI.csproj", "{A7D54C3B-2E18-4F69-B0C5-9D31E8A67F42}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -43,6 +47,28 @@ Global
 		{047045CD-41C2-4CC4-8C13-FD039F263BCC}.Release|x64.Build.0 = Release|Any CPU
 		{047045CD-41C2-4CC4-8C13-FD039F263BCC}.Release|x86.ActiveCfg = Release|Any CPU
 		{047045CD-41C2-4CC4-8C13-FD039F263BCC}.Release|x86.Build.0 = Release|Any CPU
+		{3F2B6E91-7C44-4D2A-9A1E-5B8C0D6F4A21}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F2B6E91-7C44-4D2A-9A1E-5B8C0D6F4A21}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F2B6E91-7C44-4D2A-9A1E-5B8C0D6F4A21}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{3F2B6E91-7C44-4D2A-9A1E-5B8C0D6F4A21}.Debug|x64.Build.0 = Debug|Any CPU
+		{3F2B6E91-7C44-4D2A-9A1E-5B8C0D6F4A21}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3F2B6E91-7C44-4D2A-9A1E-5B8C0D6F4A21}.Debug|x86.Build.0 = Debug|Any CPU
+		{3F2B6E91-7C44-4D2A-9A1E-5B8C0D6F4A21}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F2B6E91-7C44-4D2A-9A1E-5B8C0D6F4A21}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3F2B6E91-7C44-4D2A-9A1E-5B8C0D6F4A21}.Release|x64.ActiveCfg = Release|Any CPU
+		{3F2B6E91-7C44-4D2A-9A1E-5B8C0D6F4A21}.Release|x64.Build.0 = Release|Any CPU
+		{3F2B6E91-7C44-4D2A-9A1E-5B8C0D6F4A21}.Release|x86.ActiveCfg = Release|Any CPU
+		{3F2B6E91-7C44-4D2A-9A1E-5B8C0D6F4A21}.Release|x86.Build.0 = Release|Any CPU
+		{A7D54C3B-2E18-4F69-B0C5-9D31E8A67F42}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{A7D54C3B-2E18-4F69-B0C5-9D31E8A67F42}.Debug|x64.ActiveCfg = Debug|x64
+		{A7D54C3B-2E18-4F69-B0C5-9D31E8A67F42}.Debug|x64.Build.0 = Debug|x64
+		{A7D54C3B-2E18-4F69-B0C5-9D31E8A67F42}.Debug|x86.ActiveCfg = Debug|x86
+		{A7D54C3B-2E18-4F69-B0C5-9D31E8A67F42}.Debug|x86.Build.0 = Debug|x86
+		{A7D54C3B-2E18-4F69-B0C5-9D31E8A67F42}.Release|Any CPU.ActiveCfg = Release|x64
+		{A7D54C3B-2E18-4F69-B0C5-9D31E8A67F42}.Release|x64.ActiveCfg = Release|x64
+		{A7D54C3B-2E18-4F69-B0C5-9D31E8A67F42}.Release|x64.Build.0 = Release|x64
+		{A7D54C3B-2E18-4F69-B0C5-9D31E8A67F42}.Release|x86.ActiveCfg = Release|x86
+		{A7D54C3B-2E18-4F69-B0C5-9D31E8A67F42}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -50,5 +76,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{0A058F70-3D0E-4CA4-9D43-A3F55E110A7C} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{047045CD-41C2-4CC4-8C13-FD039F263BCC} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{3F2B6E91-7C44-4D2A-9A1E-5B8C0D6F4A21} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{A7D54C3B-2E18-4F69-B0C5-9D31E8A67F42} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 	EndGlobalSection
 EndGlobal

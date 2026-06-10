@@ -2,12 +2,12 @@ using System.Collections.ObjectModel;
 using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.Win32;
 using RecipeDownloader.Core.Matching;
 using RecipeDownloader.Core.Models;
 using RecipeDownloader.Core.Storage;
+using RecipeDownloader.ViewModels.Services;
 
-namespace RecipeDownloader.App.ViewModels;
+namespace RecipeDownloader.ViewModels;
 
 public partial class MainViewModel : ObservableObject
 {
@@ -15,6 +15,9 @@ public partial class MainViewModel : ObservableObject
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "RecipeDownloader");
 
     private static readonly string SettingsPath = Path.Combine(SettingsDirectory, "settings.json");
+
+    private readonly IFolderPickerService _folderPicker;
+    private readonly IClipboardService _clipboard;
 
     public ObservableCollection<ProviderViewModel> Providers { get; } = [];
 
@@ -40,11 +43,12 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private GroceryListViewModel? _groceryListViewModel;
 
-    private PantryStore? _pantryStore;
     private List<RecipeData> _allRecipeData = [];
 
-    public MainViewModel()
+    public MainViewModel(IFolderPickerService folderPicker, IClipboardService clipboard)
     {
+        _folderPicker = folderPicker;
+        _clipboard = clipboard;
         LoadSettings();
     }
 
@@ -56,7 +60,6 @@ public partial class MainViewModel : ObservableObject
 
     public void SetPantryStore(PantryStore store)
     {
-        _pantryStore = store;
         PantryViewModel = new PantryViewModel(store);
     }
 
@@ -91,23 +94,20 @@ public partial class MainViewModel : ObservableObject
     private void OnPairSelected(RecipePairMatch pair)
     {
         var pantry = PantryViewModel?.Inventory ?? new PantryInventory();
-        GroceryListViewModel = new GroceryListViewModel();
+        GroceryListViewModel = new GroceryListViewModel(_clipboard);
         GroceryListViewModel.Generate(pair, pantry);
         ActiveView = "GroceryList";
     }
 
     [RelayCommand]
-    private void BrowseOutputDirectory()
+    private async Task BrowseOutputDirectoryAsync()
     {
-        var dialog = new OpenFolderDialog
-        {
-            Title = "Select Recipe Output Directory",
-            InitialDirectory = Directory.Exists(OutputDirectory) ? OutputDirectory : null
-        };
+        var folder = await _folderPicker.PickFolderAsync(
+            Directory.Exists(OutputDirectory) ? OutputDirectory : null);
 
-        if (dialog.ShowDialog() == true)
+        if (folder is not null)
         {
-            OutputDirectory = dialog.FolderName;
+            OutputDirectory = folder;
             SaveSettings();
         }
     }

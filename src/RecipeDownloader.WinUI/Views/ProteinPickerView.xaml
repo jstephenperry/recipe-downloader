@@ -1,0 +1,75 @@
+<UserControl
+    x:Class="RecipeDownloader.WinUI.Views.ProteinPickerView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:RecipeDownloader.ViewModels">
+
+    <Grid Padding="12" RowSpacing="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="Select Core Proteins" Style="{StaticResource SectionHeader}" />
+        <TextBlock Grid.Row="1"
+                   Text="Choose up to 2 proteins to find recipe pairs with overlapping ingredients."
+                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+
+        <!-- Column headers -->
+        <Grid Grid.Row="2" Padding="16,4,16,4"
+              Background="{ThemeResource LayerFillColorDefaultBrush}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="48" />
+                <ColumnDefinition Width="130" />
+                <ColumnDefinition Width="80" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="1" Text="Protein" FontWeight="SemiBold" />
+            <TextBlock Grid.Column="2" Text="Recipes" FontWeight="SemiBold" />
+            <TextBlock Grid.Column="3" Text="Variants" FontWeight="SemiBold" />
+        </Grid>
+
+        <ListView Grid.Row="3" ItemsSource="{Binding Proteins}" SelectionMode="None">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                    <Setter Property="MinHeight" Value="40" />
+                </Style>
+            </ListView.ItemContainerStyle>
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="vm:ProteinOptionViewModel">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="48" />
+                            <ColumnDefinition Width="130" />
+                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <CheckBox Grid.Column="0" IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                  MinWidth="0" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="1" Text="{Binding CanonicalName}" FontWeight="SemiBold"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="2" Text="{Binding RecipeCount}" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="3" Text="{Binding VariantsDisplay}" VerticalAlignment="Center"
+                                   TextTrimming="CharacterEllipsis"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <StackPanel Grid.Row="4" Orientation="Horizontal" Spacing="4">
+            <Button Content="Load Proteins" Command="{Binding LoadProteinsCommand}"
+                    Style="{StaticResource ActionButton}" />
+            <Button Content="Find Matching Recipes" Command="{Binding FindMatchingRecipesCommand}"
+                    Style="{StaticResource ActionButton}" />
+        </StackPanel>
+
+        <TextBlock Grid.Row="5" Text="{Binding StatusText}"
+                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+    </Grid>
+</UserControl>

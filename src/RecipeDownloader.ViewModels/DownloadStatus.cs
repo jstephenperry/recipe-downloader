@@ -1,4 +1,4 @@
-namespace RecipeDownloader.App.ViewModels;
+namespace RecipeDownloader.ViewModels;
 
 public enum DownloadStatus
 {

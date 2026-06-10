@@ -1,0 +1,106 @@
+<UserControl
+    x:Class="RecipeDownloader.WinUI.Views.RecipeMatchView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:RecipeDownloader.ViewModels">
+
+    <Grid Padding="12" RowSpacing="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="6">
+            <TextBlock Text="Recipe Matches:" Style="{StaticResource SectionHeader}" />
+            <TextBlock Text="{Binding Protein1}" Style="{StaticResource SectionHeader}" FontWeight="Bold" />
+            <TextBlock Text="+" Style="{StaticResource SectionHeader}" />
+            <TextBlock Text="{Binding Protein2}" Style="{StaticResource SectionHeader}" FontWeight="Bold" />
+        </StackPanel>
+
+        <TextBlock Grid.Row="1"
+                   Text="Pairs ranked by ancillary ingredient overlap. Select a pair to generate a grocery list."
+                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+
+        <!-- Column headers -->
+        <Grid Grid.Row="2" Padding="16,4,16,4"
+              Background="{ThemeResource LayerFillColorDefaultBrush}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="70" />
+                <ColumnDefinition Width="80" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="Recipe 1" FontWeight="SemiBold" />
+            <TextBlock Grid.Column="1" Text="Recipe 2" FontWeight="SemiBold" />
+            <TextBlock Grid.Column="2" Text="Shared" FontWeight="SemiBold" />
+            <TextBlock Grid.Column="3" Text="Overlap" FontWeight="SemiBold" />
+        </Grid>
+
+        <ListView Grid.Row="3"
+                  ItemsSource="{Binding Matches}"
+                  SelectedItem="{Binding SelectedMatch, Mode=TwoWay}"
+                  SelectionMode="Single">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                </Style>
+            </ListView.ItemContainerStyle>
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="vm:RecipePairMatchViewModel">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="70" />
+                            <ColumnDefinition Width="80" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="{Binding Recipe1Title}" VerticalAlignment="Center"
+                                   TextTrimming="CharacterEllipsis" />
+                        <TextBlock Grid.Column="1" Text="{Binding Recipe2Title}" VerticalAlignment="Center"
+                                   TextTrimming="CharacterEllipsis" />
+                        <TextBlock Grid.Column="2" Text="{Binding SharedCount}" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="3" Text="{Binding ScoreDisplay}" VerticalAlignment="Center" />
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <!-- Detail for selected match -->
+        <Border Grid.Row="4" Padding="8" Background="{ThemeResource LayerFillColorDefaultBrush}"
+                CornerRadius="4"
+                Visibility="{Binding SelectedMatch, Converter={StaticResource NullToVis}}">
+            <StackPanel Spacing="4">
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <TextBlock Text="Shared ingredients:" FontWeight="SemiBold" />
+                    <TextBlock Text="{Binding SelectedMatch.SharedDisplay}" TextWrapping="Wrap"
+                               Foreground="Green" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <TextBlock Text="Only in" FontWeight="SemiBold" />
+                    <TextBlock Text="{Binding SelectedMatch.Recipe1Title}" FontWeight="SemiBold" />
+                    <TextBlock Text=":" FontWeight="SemiBold" />
+                    <TextBlock Text="{Binding SelectedMatch.UniqueToR1Display}" TextWrapping="Wrap" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <TextBlock Text="Only in" FontWeight="SemiBold" />
+                    <TextBlock Text="{Binding SelectedMatch.Recipe2Title}" FontWeight="SemiBold" />
+                    <TextBlock Text=":" FontWeight="SemiBold" />
+                    <TextBlock Text="{Binding SelectedMatch.UniqueToR2Display}" TextWrapping="Wrap" />
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <StackPanel Grid.Row="5" Orientation="Horizontal">
+            <Button Content="Generate Grocery List" Command="{Binding SelectPairCommand}"
+                    Style="{StaticResource ActionButton}" />
+        </StackPanel>
+
+        <TextBlock Grid.Row="6" Text="{Binding StatusText}"
+                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+    </Grid>
+</UserControl>

@@ -5,12 +5,14 @@ using RecipeDownloader.Core.Classification;
 using RecipeDownloader.Core.GroceryList;
 using RecipeDownloader.Core.Matching;
 using RecipeDownloader.Core.Models;
+using RecipeDownloader.ViewModels.Services;
 
-namespace RecipeDownloader.App.ViewModels;
+namespace RecipeDownloader.ViewModels;
 
 public partial class GroceryListViewModel : ObservableObject
 {
     private readonly GroceryListGenerator _generator = new();
+    private readonly IClipboardService _clipboard;
     private GroceryList? _groceryList;
 
     public ObservableCollection<GroceryItemGroupViewModel> Groups { get; } = [];
@@ -27,6 +29,11 @@ public partial class GroceryListViewModel : ObservableObject
 
     [ObservableProperty]
     private bool _hasResults;
+
+    public GroceryListViewModel(IClipboardService clipboard)
+    {
+        _clipboard = clipboard;
+    }
 
     public void Generate(RecipePairMatch pair, PantryInventory pantry)
     {
@@ -97,7 +104,7 @@ public partial class GroceryListViewModel : ObservableObject
         lines.Add("");
         lines.Add(SummaryText);
 
-        System.Windows.Clipboard.SetText(string.Join(Environment.NewLine, lines));
+        _clipboard.SetText(string.Join(Environment.NewLine, lines));
     }
 
     private static int CategoryOrder(IngredientCategory cat) => cat switch
