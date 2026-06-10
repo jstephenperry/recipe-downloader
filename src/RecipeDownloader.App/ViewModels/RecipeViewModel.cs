@@ -56,29 +56,54 @@ public partial class RecipeViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void OpenInBrowser()
-    {
-        Process.Start(new ProcessStartInfo(SourceUrl) { UseShellExecute = true });
-    }
+    private void OpenInBrowser() => SafeOpenUrl(SourceUrl);
 
     [RelayCommand]
     private void OpenPdfInBrowser()
     {
         if (PdfUrl is not null)
-            Process.Start(new ProcessStartInfo(PdfUrl) { UseShellExecute = true });
+            SafeOpenUrl(PdfUrl);
     }
 
     [RelayCommand]
     private void OpenLocalFile()
     {
         if (LocalFilePath is not null && File.Exists(LocalFilePath))
-            Process.Start(new ProcessStartInfo(LocalFilePath) { UseShellExecute = true });
+            SafeOpenPath(LocalFilePath);
     }
 
     [RelayCommand]
     private void OpenLocalJson()
     {
         if (LocalJsonPath is not null && File.Exists(LocalJsonPath))
-            Process.Start(new ProcessStartInfo(LocalJsonPath) { UseShellExecute = true });
+            SafeOpenPath(LocalJsonPath);
+    }
+
+    private static void SafeOpenUrl(string url)
+    {
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) ||
+            uri.Scheme is not ("http" or "https"))
+            return;
+
+        try
+        {
+            Process.Start(new ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true });
+        }
+        catch
+        {
+            // No default browser or association broken — not actionable
+        }
+    }
+
+    private static void SafeOpenPath(string path)
+    {
+        try
+        {
+            Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
+        }
+        catch
+        {
+            // File association missing — not actionable
+        }
     }
 }

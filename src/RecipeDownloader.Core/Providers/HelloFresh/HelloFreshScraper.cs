@@ -231,8 +231,8 @@ public static class HelloFreshScraper
         if (!match.Success)
             return null;
 
-        var hours = match.Groups[1].Success ? int.Parse(match.Groups[1].Value) : 0;
-        var minutes = match.Groups[2].Success ? int.Parse(match.Groups[2].Value) : 0;
+        var hours = match.Groups[1].Success ? int.Parse(match.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture) : 0;
+        var minutes = match.Groups[2].Success ? int.Parse(match.Groups[2].Value, System.Globalization.CultureInfo.InvariantCulture) : 0;
         var total = hours * 60 + minutes;
         return total > 0 ? total : null;
     }

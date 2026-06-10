@@ -32,7 +32,11 @@ public class PantryStore
     public async Task SaveAsync(PantryInventory inventory, CancellationToken ct = default)
     {
         inventory.LastUpdated = DateTimeOffset.Now;
-        await using var stream = new FileStream(_filePath, FileMode.Create, FileAccess.Write, FileShare.None);
-        await JsonSerializer.SerializeAsync(stream, inventory, JsonOptions, ct);
+        var tempPath = _filePath + ".tmp";
+        await using (var stream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None))
+        {
+            await JsonSerializer.SerializeAsync(stream, inventory, JsonOptions, ct);
+        }
+        File.Move(tempPath, _filePath, overwrite: true);
     }
 }

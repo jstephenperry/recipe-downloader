@@ -1,6 +1,7 @@
 using System.Net.Http;
 using System.Text.Json;
 using System.Windows;
+using System.Windows.Threading;
 using RecipeDownloader.App.ViewModels;
 using RecipeDownloader.App.Views;
 using RecipeDownloader.Core.Models;
@@ -17,6 +18,10 @@ public partial class App : Application
     protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+
+        DispatcherUnhandledException += OnDispatcherUnhandledException;
+        TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
+        AppDomain.CurrentDomain.UnhandledException += OnDomainUnhandledException;
 
         _httpClient = new HttpClient();
         _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(
@@ -47,14 +52,27 @@ public partial class App : Application
         var mainWindow = new MainWindow { DataContext = mainVm };
         mainWindow.Show();
 
-        // Load cached catalogs
+        // Load cached catalogs — guarded so a corrupt file doesn't prevent startup
         foreach (var provider in mainVm.Providers)
         {
-            await provider.LoadCatalogAsync();
+            try
+            {
+                await provider.LoadCatalogAsync();
+            }
+            catch (Exception ex)
+            {
+                ShowNonFatalError($"Failed to load cached catalog for {provider.Name}: {ex.Message}");
+            }
         }
 
-        // Load pantry
-        await mainVm.PantryViewModel!.LoadAsync();
+        try
+        {
+            await mainVm.PantryViewModel!.LoadAsync();
+        }
+        catch (Exception ex)
+        {
+            ShowNonFatalError($"Failed to load pantry: {ex.Message}");
+        }
 
         // Load recipe data from downloaded JSON files for meal planning
         var recipeData = await LoadRecipeDataAsync(mainVm.GetOutputDirectory());
@@ -95,6 +113,38 @@ public partial class App : Application
         }
 
         return recipes;
+    }
+
+    private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+    {
+        e.Handled = true;
+        ShowFatalError(e.Exception);
+    }
+
+    private static void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
+    {
+        e.SetObserved();
+    }
+
+    private static void OnDomainUnhandledException(object sender, UnhandledExceptionEventArgs e)
+    {
+        if (e.ExceptionObject is Exception ex)
+            ShowFatalError(ex);
+    }
+
+    private static void ShowFatalError(Exception ex)
+    {
+        MessageBox.Show(
+            $"An unexpected error occurred:\n\n{ex.Message}\n\nThe application will continue, but some features may not work correctly.",
+            "Recipe Downloader — Error",
+            MessageBoxButton.OK,
+            MessageBoxImage.Error);
+    }
+
+    private static void ShowNonFatalError(string message)
+    {
+        MessageBox.Show(message, "Recipe Downloader — Warning",
+            MessageBoxButton.OK, MessageBoxImage.Warning);
     }
 
     protected override void OnExit(ExitEventArgs e)

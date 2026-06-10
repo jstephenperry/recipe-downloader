@@ -31,8 +31,12 @@ public class RecipeCatalogStore
     public async Task SaveAsync(RecipeCatalog catalog, CancellationToken ct = default)
     {
         var path = GetFilePath(catalog.ProviderName);
-        await using var stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
-        await JsonSerializer.SerializeAsync(stream, catalog, JsonOptions, ct);
+        var tempPath = path + ".tmp";
+        await using (var stream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None))
+        {
+            await JsonSerializer.SerializeAsync(stream, catalog, JsonOptions, ct);
+        }
+        File.Move(tempPath, path, overwrite: true);
     }
 
     private string GetFilePath(string providerName)

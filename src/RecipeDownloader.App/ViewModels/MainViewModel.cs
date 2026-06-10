@@ -154,7 +154,9 @@ public partial class MainViewModel : ObservableObject
             Directory.CreateDirectory(SettingsDirectory);
             var json = JsonSerializer.Serialize(new AppSettings { OutputDirectory = OutputDirectory },
                 new JsonSerializerOptions { WriteIndented = true });
-            File.WriteAllText(SettingsPath, json);
+            var tempPath = SettingsPath + ".tmp";
+            File.WriteAllText(tempPath, json);
+            File.Move(tempPath, SettingsPath, overwrite: true);
         }
         catch
         {

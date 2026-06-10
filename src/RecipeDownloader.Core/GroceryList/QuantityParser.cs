@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace RecipeDownloader.Core.GroceryList;
@@ -49,7 +50,7 @@ public static partial class QuantityParser
         var match = MixedNumberRegex().Match(text);
         if (match.Success)
         {
-            result = double.Parse(match.Groups[1].Value);
+            result = double.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
             var fracChar = match.Groups[2].Value[0];
             if (UnicodeFractions.TryGetValue(fracChar, out var fracVal))
                 result += fracVal;
@@ -64,14 +65,14 @@ public static partial class QuantityParser
         var slashMatch = SlashFractionRegex().Match(text);
         if (slashMatch.Success)
         {
-            var whole = slashMatch.Groups[1].Success ? double.Parse(slashMatch.Groups[1].Value) : 0;
-            var num = double.Parse(slashMatch.Groups[2].Value);
-            var den = double.Parse(slashMatch.Groups[3].Value);
+            var whole = slashMatch.Groups[1].Success ? double.Parse(slashMatch.Groups[1].Value, CultureInfo.InvariantCulture) : 0;
+            var num = double.Parse(slashMatch.Groups[2].Value, CultureInfo.InvariantCulture);
+            var den = double.Parse(slashMatch.Groups[3].Value, CultureInfo.InvariantCulture);
             return den != 0 ? whole + num / den : null;
         }
 
         // Plain number
-        if (double.TryParse(text, out var plainNum))
+        if (double.TryParse(text, NumberStyles.Number, CultureInfo.InvariantCulture, out var plainNum))
             return plainNum;
 
         return null;
