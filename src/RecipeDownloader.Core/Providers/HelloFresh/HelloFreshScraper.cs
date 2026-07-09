@@ -8,7 +8,8 @@ namespace RecipeDownloader.Core.Providers.HelloFresh;
 
 public static class HelloFreshScraper
 {
-    private const string RecipeUrlPrefix = "https://www.hellofresh.com/recipes/";
+    private const string BaseUrl = "https://www.hellofresh.com";
+    private const string RecipePathPrefix = "/recipes/";
     private const string PdfUrlFragment = "recipecards/card";
 
     public static List<Recipe> ParseRecipeLinksFromSitemap(string html)
@@ -21,10 +22,16 @@ public static class HelloFreshScraper
         if (links is null)
             return recipes;
 
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
         foreach (var link in links)
         {
             var href = link.GetAttributeValue("href", "");
-            if (!href.StartsWith(RecipeUrlPrefix, StringComparison.OrdinalIgnoreCase))
+            var absoluteUrl = NormalizeRecipeUrl(href);
+            if (absoluteUrl is null)
+                continue;
+
+            if (!seen.Add(absoluteUrl))
                 continue;
 
             var name = HtmlEntity.DeEntitize(link.InnerText).Trim();
@@ -34,10 +41,38 @@ public static class HelloFreshScraper
             if (string.IsNullOrWhiteSpace(name))
                 continue;
 
-            recipes.Add(new Recipe(name, href));
+            recipes.Add(new Recipe(name, absoluteUrl));
         }
 
         return recipes;
+    }
+
+    /// <summary>
+    /// Normalizes a recipe href (which may be relative like "/recipes/foo" or
+    /// absolute like "https://www.hellofresh.com/recipes/foo") to an absolute URL.
+    /// Returns null if the href is not a recipe link.
+    /// </summary>
+    private static string? NormalizeRecipeUrl(string href)
+    {
+        if (string.IsNullOrWhiteSpace(href))
+            return null;
+
+        // Absolute URL to a recipe page
+        if (Uri.TryCreate(href, UriKind.Absolute, out var absolute))
+        {
+            return absolute.AbsolutePath.StartsWith(RecipePathPrefix, StringComparison.OrdinalIgnoreCase)
+                ? absolute.GetLeftPart(UriPartial.Path)
+                : null;
+        }
+
+        // Relative URL starting with /recipes/
+        if (href.StartsWith(RecipePathPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            var path = href.Split('?', '#')[0];
+            return BaseUrl + path;
+        }
+
+        return null;
     }
 
     public static string? ParsePdfUrlFromRecipePage(string html)
@@ -55,6 +90,10 @@ public static class HelloFreshScraper
             if (href.Contains(PdfUrlFragment, StringComparison.OrdinalIgnoreCase)
                 && href.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
             {
+                if (Uri.TryCreate(href, UriKind.Absolute, out _))
+                    return href;
+                if (href.StartsWith('/'))
+                    return BaseUrl + href;
                 return href;
             }
         }

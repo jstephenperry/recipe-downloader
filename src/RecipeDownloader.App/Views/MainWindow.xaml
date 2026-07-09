@@ -20,6 +20,9 @@
         <!-- Toolbar -->
         <Border Grid.Row="0" Padding="8" Background="#F0F0F0" BorderBrush="#CCC" BorderThickness="0,0,0,1">
             <DockPanel>
+                <Button DockPanel.Dock="Left" Content="Discover All Providers"
+                        Command="{Binding DiscoverAllCommand}"
+                        Padding="10,4" Margin="0,0,12,0"/>
                 <TextBlock Text="Output:" VerticalAlignment="Center" Margin="0,0,6,0"/>
                 <Button DockPanel.Dock="Right" Content="Browse..."
                         Command="{Binding BrowseOutputDirectoryCommand}"

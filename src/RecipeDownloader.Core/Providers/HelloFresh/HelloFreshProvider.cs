@@ -31,33 +31,96 @@ public class HelloFreshProvider : IRecipeProvider
         IProgress<DiscoveryProgress>? progress = null,
         CancellationToken ct = default)
     {
-        // Fetch all sitemaps in parallel
-        progress?.Report(new DiscoveryProgress("Fetching sitemaps", 0, _letters.Length));
+        progress?.Report(new DiscoveryProgress("Discovering recipes", 0, 0, "Fetching sitemaps..."));
 
-        var sitemapTasks = _letters.Select(async letter =>
+        // Shared state across all letters. A single semaphore caps total in-flight
+        // recipe-page fetches so pipelining across letters never exceeds MaxConcurrency.
+        var semaphore = new SemaphoreSlim(MaxConcurrency);
+        var resolved = new List<Recipe>();
+        var lockObj = new object();
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var totalStubs = 0;
+        var completed = 0;
+
+        async Task ResolveStubAsync(Recipe stub)
+        {
+            await semaphore.WaitAsync(ct);
+            try
+            {
+                ct.ThrowIfCancellationRequested();
+
+                string html;
+                try
+                {
+                    html = await _httpClient.GetStringAsync(stub.SourceUrl, ct);
+                }
+                catch (HttpRequestException)
+                {
+                    Interlocked.Increment(ref completed);
+                    return;
+                }
+
+                var pdfUrl = HelloFreshScraper.ParsePdfUrlFromRecipePage(html);
+                var current = Interlocked.Increment(ref completed);
+
+                if (pdfUrl is not null)
+                {
+                    var recipe = stub with { PdfUrl = pdfUrl, DiscoveredAt = DateTimeOffset.Now };
+                    lock (lockObj)
+                    {
+                        resolved.Add(recipe);
+                    }
+                }
+
+                progress?.Report(new DiscoveryProgress(
+                    "Resolving PDFs", current, Volatile.Read(ref totalStubs), stub.Name));
+            }
+            finally
+            {
+                semaphore.Release();
+            }
+        }
+
+        // Pipeline: each letter's recipe pages begin resolving the moment that
+        // letter's sitemap is fetched and parsed — no barrier waiting for all 26.
+        var letterTasks = _letters.Select(async letter =>
         {
             var url = string.Format(SitemapUrlTemplate, letter);
+            List<Recipe> stubs;
             try
             {
                 var html = await _httpClient.GetStringAsync(url, ct);
-                var stubs = HelloFreshScraper.ParseRecipeLinksFromSitemap(html);
-                progress?.Report(new DiscoveryProgress("Fetching sitemaps", 0, _letters.Length, $"recipes-{letter}: {stubs.Count} found"));
-                return stubs;
+                stubs = HelloFreshScraper.ParseRecipeLinksFromSitemap(html);
             }
             catch (HttpRequestException ex)
             {
-                progress?.Report(new DiscoveryProgress("Error", 0, 0, $"Failed to fetch sitemap for '{letter}': {ex.Message}"));
-                return new List<Recipe>();
+                progress?.Report(new DiscoveryProgress(
+                    "Error", completed, Volatile.Read(ref totalStubs),
+                    $"Failed to fetch sitemap for '{letter}': {ex.Message}"));
+                return;
             }
+
+            // Drop duplicates that already appeared under another letter.
+            var fresh = new List<Recipe>(stubs.Count);
+            lock (lockObj)
+            {
+                foreach (var stub in stubs)
+                {
+                    if (seen.Add(stub.SourceUrl))
+                        fresh.Add(stub);
+                }
+            }
+
+            Interlocked.Add(ref totalStubs, fresh.Count);
+            progress?.Report(new DiscoveryProgress(
+                "Resolving PDFs", completed, Volatile.Read(ref totalStubs),
+                $"recipes-{letter}: {fresh.Count} found"));
+
+            await Task.WhenAll(fresh.Select(ResolveStubAsync));
         });
 
-        var sitemapResults = await Task.WhenAll(sitemapTasks);
-        var allStubs = sitemapResults.SelectMany(s => s).ToList();
-
-        progress?.Report(new DiscoveryProgress("Resolving PDFs", 0, allStubs.Count, $"Found {allStubs.Count} recipes total"));
-
-        // Resolve all PDF URLs in parallel across all letters
-        return await ResolveRecipePdfUrlsAsync(allStubs, progress, ct);
+        await Task.WhenAll(letterTasks);
+        return resolved;
     }
 
     public async Task<string> DownloadRecipeAsync(
@@ -101,58 +164,6 @@ public class HelloFreshProvider : IRecipeProvider
         }
 
         return pdfPath;
-    }
-
-    private async Task<List<Recipe>> ResolveRecipePdfUrlsAsync(
-        List<Recipe> stubs,
-        IProgress<DiscoveryProgress>? progress,
-        CancellationToken ct)
-    {
-        var semaphore = new SemaphoreSlim(MaxConcurrency);
-        var resolved = new List<Recipe>();
-        var lockObj = new object();
-        var completed = 0;
-
-        var tasks = stubs.Select(async stub =>
-        {
-            await semaphore.WaitAsync(ct);
-            try
-            {
-                ct.ThrowIfCancellationRequested();
-
-                string html;
-                try
-                {
-                    html = await _httpClient.GetStringAsync(stub.SourceUrl, ct);
-                }
-                catch (HttpRequestException)
-                {
-                    Interlocked.Increment(ref completed);
-                    return;
-                }
-
-                var pdfUrl = HelloFreshScraper.ParsePdfUrlFromRecipePage(html);
-                var current = Interlocked.Increment(ref completed);
-
-                if (pdfUrl is not null)
-                {
-                    var recipe = stub with { PdfUrl = pdfUrl, DiscoveredAt = DateTimeOffset.Now };
-                    lock (lockObj)
-                    {
-                        resolved.Add(recipe);
-                    }
-                }
-
-                progress?.Report(new DiscoveryProgress("Resolving PDFs", current, stubs.Count, stub.Name));
-            }
-            finally
-            {
-                semaphore.Release();
-            }
-        });
-
-        await Task.WhenAll(tasks);
-        return resolved;
     }
 
     private static string SanitizeFileName(string name)

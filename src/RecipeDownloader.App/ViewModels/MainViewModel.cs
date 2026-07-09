@@ -54,6 +54,25 @@ public partial class MainViewModel : ObservableObject
         SelectedProvider ??= provider;
     }
 
+    /// <summary>
+    /// Runs discovery for every provider concurrently. Each provider already
+    /// parallelizes its own network work internally, so the whole catalog
+    /// refreshes in the time of the slowest single provider rather than the sum.
+    /// </summary>
+    [RelayCommand]
+    private async Task DiscoverAllAsync()
+    {
+        var tasks = Providers
+            .Where(p => p.DiscoverCommand.CanExecute(null))
+            .Select(p => p.DiscoverCommand.ExecuteAsync(null))
+            .ToList();
+
+        if (tasks.Count == 0)
+            return;
+
+        await Task.WhenAll(tasks);
+    }
+
     public void SetPantryStore(PantryStore store)
     {
         _pantryStore = store;
