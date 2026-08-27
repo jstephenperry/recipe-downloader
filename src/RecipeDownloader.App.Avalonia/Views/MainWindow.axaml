@@ -1,0 +1,113 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:views="clr-namespace:RecipeDownloader.App.Avalonia.Views"
+        xmlns:vm="clr-namespace:RecipeDownloader.App.ViewModels;assembly=RecipeDownloader.App.Shared"
+        x:Class="RecipeDownloader.App.Avalonia.Views.MainWindow"
+        Title="Recipe Downloader" Width="1100" Height="750"
+        MinWidth="800" MinHeight="500"
+        WindowStartupLocation="CenterScreen">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- Toolbar -->
+        <Border Grid.Row="0" Padding="8" Background="#F0F0F0"
+                BorderBrush="#CCC" BorderThickness="0,0,0,1">
+            <DockPanel>
+                <Button DockPanel.Dock="Left" Content="Discover All Providers"
+                        Command="{Binding DiscoverAllCommand}"
+                        Padding="10,4" Margin="0,0,12,0"/>
+                <TextBlock DockPanel.Dock="Left" Text="Output:" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                <Button DockPanel.Dock="Right" Content="Browse..."
+                        Command="{Binding BrowseOutputDirectoryCommand}"
+                        Padding="10,4" Margin="6,0,0,0"/>
+                <TextBox Text="{Binding OutputDirectory}"
+                         VerticalContentAlignment="Center" Padding="4,2" IsReadOnly="True"/>
+            </DockPanel>
+        </Border>
+
+        <!-- Main content -->
+        <Grid Grid.Row="1" ColumnDefinitions="180,Auto,*">
+
+            <!-- Sidebar -->
+            <Border Grid.Column="0" Background="#F5F5F5" BorderBrush="#DDD" BorderThickness="0,0,1,0">
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Top">
+                        <TextBlock Text="Navigation" FontWeight="Bold" FontSize="13" Margin="10,10,10,6"/>
+                        <Button Content="Recipes" Margin="6,2" Padding="8,6"
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                                Command="{Binding NavigateToCommand}" CommandParameter="Recipes"/>
+                        <Button Content="Pantry" Margin="6,2" Padding="8,6"
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                                Command="{Binding NavigateToCommand}" CommandParameter="Pantry"/>
+                        <Button Content="Meal Planner" Margin="6,2" Padding="8,6"
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                                Command="{Binding NavigateToCommand}" CommandParameter="MealPlanner"/>
+
+                        <Separator Margin="10,10"/>
+
+                        <TextBlock Text="Providers" FontWeight="Bold" FontSize="13" Margin="10,4,10,6"/>
+                    </StackPanel>
+
+                    <ListBox ItemsSource="{Binding Providers}"
+                             SelectedItem="{Binding SelectedProvider}"
+                             BorderThickness="0" Background="Transparent"
+                             Padding="4">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate DataType="vm:ProviderViewModel">
+                                <StackPanel Margin="4,4">
+                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
+                                    <TextBlock Text="{Binding Recipes.Count, StringFormat='{}{0} recipes'}"
+                                               FontSize="11" Foreground="Gray"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+            </Border>
+
+            <GridSplitter Grid.Column="1" Width="4" Background="Transparent"/>
+
+            <!-- Content area -->
+            <Grid Grid.Column="2" Margin="10">
+
+                <!-- Recipes -->
+                <Grid IsVisible="{Binding ActiveView, Converter={StaticResource StringEquals}, ConverterParameter=Recipes}">
+                    <TextBlock Text="Select a provider from the sidebar"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               Foreground="Gray" FontStyle="Italic" FontSize="14"
+                               IsVisible="{Binding SelectedProvider, Converter={StaticResource NotNull}, ConverterParameter=invert}"/>
+
+                    <Grid RowDefinitions="*,Auto,180"
+                          DataContext="{Binding SelectedProvider}"
+                          IsVisible="{Binding Converter={StaticResource NotNull}}">
+                        <views:RecipeListView Grid.Row="0"/>
+                        <GridSplitter Grid.Row="1" Height="4" Background="Transparent"/>
+                        <views:RecipeDetailView Grid.Row="2" DataContext="{Binding SelectedRecipe}"/>
+                    </Grid>
+                </Grid>
+
+                <!--
+                  IsVisible lives on the wrapper, not on the view itself: each view replaces its
+                  own DataContext with a child view model, so binding visibility on the view would
+                  have to climb back out to the window's scope. Keeping the test on a wrapper that
+                  still sees the MainViewModel avoids that traversal entirely.
+                -->
+                <Panel IsVisible="{Binding ActiveView, Converter={StaticResource StringEquals}, ConverterParameter=Pantry}">
+                    <views:PantryView DataContext="{Binding PantryViewModel}"/>
+                </Panel>
+
+                <Panel IsVisible="{Binding ActiveView, Converter={StaticResource StringEquals}, ConverterParameter=MealPlanner}">
+                    <views:ProteinPickerView DataContext="{Binding ProteinPickerViewModel}"/>
+                </Panel>
+
+                <Panel IsVisible="{Binding ActiveView, Converter={StaticResource StringEquals}, ConverterParameter=RecipeMatch}">
+                    <views:RecipeMatchView DataContext="{Binding RecipeMatchViewModel}"/>
+                </Panel>
+
+                <Panel IsVisible="{Binding ActiveView, Converter={StaticResource StringEquals}, ConverterParameter=GroceryList}">
+                    <views:GroceryListView DataContext="{Binding GroceryListViewModel}"/>
+                </Panel>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>

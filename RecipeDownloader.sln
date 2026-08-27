@@ -9,6 +9,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecipeDownloader.Core", "sr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecipeDownloader.App", "src\RecipeDownloader.App\RecipeDownloader.App.csproj", "{047045CD-41C2-4CC4-8C13-FD039F263BCC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecipeDownloader.App.Shared", "src\RecipeDownloader.App.Shared\RecipeDownloader.App.Shared.csproj", "{BBD19B58-B965-4D56-93C1-22696B6326A4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RecipeDownloader.App.Avalonia", "src\RecipeDownloader.App.Avalonia\RecipeDownloader.App.Avalonia.csproj", "{40BACC9F-1601-48BC-AA73-147402EA1FC8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -43,6 +47,30 @@ Global
 		{047045CD-41C2-4CC4-8C13-FD039F263BCC}.Release|x64.Build.0 = Release|Any CPU
 		{047045CD-41C2-4CC4-8C13-FD039F263BCC}.Release|x86.ActiveCfg = Release|Any CPU
 		{047045CD-41C2-4CC4-8C13-FD039F263BCC}.Release|x86.Build.0 = Release|Any CPU
+		{BBD19B58-B965-4D56-93C1-22696B6326A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BBD19B58-B965-4D56-93C1-22696B6326A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BBD19B58-B965-4D56-93C1-22696B6326A4}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{BBD19B58-B965-4D56-93C1-22696B6326A4}.Debug|x64.Build.0 = Debug|Any CPU
+		{BBD19B58-B965-4D56-93C1-22696B6326A4}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{BBD19B58-B965-4D56-93C1-22696B6326A4}.Debug|x86.Build.0 = Debug|Any CPU
+		{BBD19B58-B965-4D56-93C1-22696B6326A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BBD19B58-B965-4D56-93C1-22696B6326A4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BBD19B58-B965-4D56-93C1-22696B6326A4}.Release|x64.ActiveCfg = Release|Any CPU
+		{BBD19B58-B965-4D56-93C1-22696B6326A4}.Release|x64.Build.0 = Release|Any CPU
+		{BBD19B58-B965-4D56-93C1-22696B6326A4}.Release|x86.ActiveCfg = Release|Any CPU
+		{BBD19B58-B965-4D56-93C1-22696B6326A4}.Release|x86.Build.0 = Release|Any CPU
+		{40BACC9F-1601-48BC-AA73-147402EA1FC8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{40BACC9F-1601-48BC-AA73-147402EA1FC8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{40BACC9F-1601-48BC-AA73-147402EA1FC8}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{40BACC9F-1601-48BC-AA73-147402EA1FC8}.Debug|x64.Build.0 = Debug|Any CPU
+		{40BACC9F-1601-48BC-AA73-147402EA1FC8}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{40BACC9F-1601-48BC-AA73-147402EA1FC8}.Debug|x86.Build.0 = Debug|Any CPU
+		{40BACC9F-1601-48BC-AA73-147402EA1FC8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{40BACC9F-1601-48BC-AA73-147402EA1FC8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{40BACC9F-1601-48BC-AA73-147402EA1FC8}.Release|x64.ActiveCfg = Release|Any CPU
+		{40BACC9F-1601-48BC-AA73-147402EA1FC8}.Release|x64.Build.0 = Release|Any CPU
+		{40BACC9F-1601-48BC-AA73-147402EA1FC8}.Release|x86.ActiveCfg = Release|Any CPU
+		{40BACC9F-1601-48BC-AA73-147402EA1FC8}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -50,5 +78,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{0A058F70-3D0E-4CA4-9D43-A3F55E110A7C} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{047045CD-41C2-4CC4-8C13-FD039F263BCC} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{BBD19B58-B965-4D56-93C1-22696B6326A4} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{40BACC9F-1601-48BC-AA73-147402EA1FC8} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 	EndGlobalSection
 EndGlobal

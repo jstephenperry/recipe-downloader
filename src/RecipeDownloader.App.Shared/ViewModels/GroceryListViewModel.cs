@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using RecipeDownloader.App.Platform;
 using RecipeDownloader.Core.Classification;
 using RecipeDownloader.Core.GroceryList;
 using RecipeDownloader.Core.Matching;
@@ -11,7 +12,13 @@ namespace RecipeDownloader.App.ViewModels;
 public partial class GroceryListViewModel : ObservableObject
 {
     private readonly GroceryListGenerator _generator = new();
+    private readonly IClipboardService _clipboard;
     private GroceryList? _groceryList;
+
+    public GroceryListViewModel(IClipboardService clipboard)
+    {
+        _clipboard = clipboard;
+    }
 
     public ObservableCollection<GroceryItemGroupViewModel> Groups { get; } = [];
     public ObservableCollection<GroceryItemViewModel> OnHandItems { get; } = [];
@@ -61,7 +68,7 @@ public partial class GroceryListViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void CopyToClipboard()
+    private async Task CopyToClipboardAsync()
     {
         if (_groceryList is null) return;
 
@@ -97,7 +104,7 @@ public partial class GroceryListViewModel : ObservableObject
         lines.Add("");
         lines.Add(SummaryText);
 
-        System.Windows.Clipboard.SetText(string.Join(Environment.NewLine, lines));
+        await _clipboard.SetTextAsync(string.Join(Environment.NewLine, lines));
     }
 
     private static int CategoryOrder(IngredientCategory cat) => cat switch

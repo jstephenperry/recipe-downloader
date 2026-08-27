@@ -1,0 +1,34 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="RecipeDownloader.App.Avalonia.Views.ProteinPickerView">
+
+    <Grid Margin="10" RowDefinitions="Auto,Auto,*,Auto,Auto">
+
+        <TextBlock Grid.Row="0" Text="Select Core Proteins" Classes="sectionHeader" FontSize="18"/>
+        <TextBlock Grid.Row="1" TextWrapping="Wrap" Foreground="Gray" Margin="0,0,0,10"
+                   Text="Choose up to 2 proteins to find recipe pairs with overlapping ingredients."/>
+
+        <DataGrid Grid.Row="2"
+                  ItemsSource="{Binding Proteins}"
+                  AutoGenerateColumns="False"
+                  SelectionMode="Single"
+                  GridLinesVisibility="Horizontal"
+                  HeadersVisibility="Column"
+                  RowHeight="36">
+            <DataGrid.Columns>
+                <DataGridCheckBoxColumn Header="" Binding="{Binding IsSelected}" Width="40"/>
+                <DataGridTextColumn Header="Protein" Binding="{Binding CanonicalName}" Width="120" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Recipes" Binding="{Binding RecipeCount}" Width="70" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Variants" Binding="{Binding VariantsDisplay}" Width="*" IsReadOnly="True"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <WrapPanel Grid.Row="3" Margin="0,10,0,0">
+            <Button Content="Load Proteins" Command="{Binding LoadProteinsCommand}" Classes="action"/>
+            <Button Content="Find Matching Recipes" Command="{Binding FindMatchingRecipesCommand}"
+                    Classes="action" FontWeight="SemiBold"/>
+        </WrapPanel>
+
+        <TextBlock Grid.Row="4" Text="{Binding StatusText}" Margin="0,6,0,0" Foreground="Gray"/>
+    </Grid>
+</UserControl>

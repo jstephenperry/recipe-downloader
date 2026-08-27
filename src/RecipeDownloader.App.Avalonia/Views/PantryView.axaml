@@ -1,0 +1,52 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="RecipeDownloader.App.Avalonia.Views.PantryView">
+
+    <Grid Margin="10" RowDefinitions="Auto,Auto,Auto,*,Auto,Auto">
+
+        <TextBlock Grid.Row="0" Text="Pantry Inventory" Classes="sectionHeader" FontSize="18"/>
+        <TextBlock Grid.Row="1" TextWrapping="Wrap" Foreground="Gray" Margin="0,0,0,10"
+                   Text="Track ingredients you already have. These will be subtracted from your grocery list."/>
+
+        <!-- Add ingredient form. Avalonia's TextBox has built-in PlaceholderText, which replaces
+             the VisualBrush placeholder trick the WPF view needed. -->
+        <Grid Grid.Row="2" Margin="0,0,0,10" ColumnDefinitions="*,80,80,Auto">
+            <TextBox Grid.Column="0" Text="{Binding NewItemName}" PlaceholderText="Ingredient name..."
+                     VerticalContentAlignment="Center" Padding="6,4" Margin="0,0,6,0"/>
+            <TextBox Grid.Column="1" Text="{Binding NewItemQuantity}" PlaceholderText="Qty"
+                     VerticalContentAlignment="Center" Padding="6,4" Margin="0,0,6,0"/>
+            <TextBox Grid.Column="2" Text="{Binding NewItemUnit}" PlaceholderText="Unit"
+                     VerticalContentAlignment="Center" Padding="6,4" Margin="0,0,6,0"/>
+            <Button Grid.Column="3" Content="Add" Command="{Binding AddItemCommand}"
+                    Classes="action" MinWidth="70"/>
+        </Grid>
+
+        <!-- Pantry items. Avalonia has no ListView/GridView, so the WPF GridView becomes a DataGrid. -->
+        <DataGrid Grid.Row="3" ItemsSource="{Binding Items}"
+                  AutoGenerateColumns="False"
+                  GridLinesVisibility="Horizontal"
+                  HeadersVisibility="Column"
+                  BorderThickness="1" BorderBrush="#DDD"
+                  RowHeight="32">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Ingredient" Binding="{Binding DisplayName}" Width="250" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Quantity" Binding="{Binding QuantityDisplay}" Width="120" IsReadOnly="True"/>
+                <DataGridTemplateColumn Header="" Width="90" IsReadOnly="True">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Content="Remove" Padding="6,2" Margin="4,0"
+                                    Command="{Binding $parent[DataGrid].DataContext.RemoveItemCommand}"
+                                    CommandParameter="{Binding}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <WrapPanel Grid.Row="4" Margin="0,8,0,0">
+            <Button Content="Clear All" Command="{Binding ClearAllCommand}" Classes="action"/>
+        </WrapPanel>
+
+        <TextBlock Grid.Row="5" Text="{Binding StatusText}" Margin="0,6,0,0" Foreground="Gray"/>
+    </Grid>
+</UserControl>

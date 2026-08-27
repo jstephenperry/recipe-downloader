@@ -1,6 +1,7 @@
 using System.Text.Json;
 using RecipeDownloader.Core.Export;
 using RecipeDownloader.Core.Models;
+using RecipeDownloader.Core.Providers.Shared;
 
 namespace RecipeDownloader.Core.Providers.BlueApron;
 
@@ -64,7 +65,7 @@ public class BlueApronProvider : IRecipeProvider
     {
         Directory.CreateDirectory(outputDirectory);
 
-        var baseName = SanitizeFileName(recipe.Name);
+        var baseName = FileNameSanitizer.Sanitize(recipe.Name);
 
         var html = await _httpClient.GetStringAsync(recipe.SourceUrl, ct);
         var recipeData = BlueApronScraper.ParseRecipeDataFromPage(html, recipe.SourceUrl);
@@ -146,12 +147,4 @@ public class BlueApronProvider : IRecipeProvider
         return validated;
     }
 
-    private static string SanitizeFileName(string name)
-    {
-        var invalid = Path.GetInvalidFileNameChars();
-        var sanitized = string.Join("", name.Select(c => invalid.Contains(c) ? '_' : c));
-        if (sanitized.Length > 200)
-            sanitized = sanitized[..200];
-        return sanitized;
-    }
 }

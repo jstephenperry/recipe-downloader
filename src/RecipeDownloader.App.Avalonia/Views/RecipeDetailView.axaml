@@ -1,0 +1,51 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="RecipeDownloader.App.Avalonia.Views.RecipeDetailView">
+
+    <Border Padding="12" Background="#FAFAFA" BorderBrush="#DDD" BorderThickness="0,1,0,0">
+        <Grid>
+            <TextBlock Text="Select a recipe to see details"
+                       VerticalAlignment="Center" HorizontalAlignment="Center"
+                       Foreground="Gray" FontStyle="Italic"
+                       IsVisible="{Binding Converter={StaticResource NotNull}, ConverterParameter=invert}"/>
+
+            <ScrollViewer IsVisible="{Binding Converter={StaticResource NotNull}}">
+                <StackPanel>
+                    <TextBlock Text="{Binding Name}" FontSize="16" FontWeight="Bold"
+                               TextWrapping="Wrap" Margin="0,0,0,8"/>
+
+                    <TextBlock Text="{Binding Status, Converter={StaticResource StatusToText}}"
+                               Foreground="{Binding Status, Converter={StaticResource StatusToColor}}"
+                               FontWeight="SemiBold" Margin="0,0,0,12"/>
+
+                    <TextBlock Text="Source URL" FontWeight="SemiBold" Margin="0,0,0,2"/>
+                    <Button Content="{Binding SourceUrl}" Command="{Binding OpenInBrowserCommand}"
+                            Classes="link" Margin="0,0,0,8"/>
+
+                    <TextBlock Text="PDF URL" FontWeight="SemiBold" Margin="0,0,0,2"/>
+                    <TextBlock Text="No PDF available" Foreground="Gray" FontStyle="Italic"
+                               IsVisible="{Binding HasPdf, Converter={StaticResource Truthy}, ConverterParameter=invert}"/>
+                    <Button Content="{Binding PdfUrl}" Command="{Binding OpenPdfInBrowserCommand}"
+                            Classes="link" Margin="0,0,0,8"
+                            IsVisible="{Binding HasPdf}"/>
+
+                    <TextBlock Text="Local File" FontWeight="SemiBold" Margin="0,0,0,2"
+                               IsVisible="{Binding HasLocalFile}"/>
+                    <Button Content="{Binding LocalFilePath}" Command="{Binding OpenLocalFileCommand}"
+                            Classes="link" Margin="0,0,0,8"
+                            IsVisible="{Binding HasLocalFile}"/>
+
+                    <TextBlock Text="JSON Data" FontWeight="SemiBold" Margin="0,0,0,2"
+                               IsVisible="{Binding HasLocalJson}"/>
+                    <Button Content="{Binding LocalJsonPath}" Command="{Binding OpenLocalJsonCommand}"
+                            Classes="link" Margin="0,0,0,8"
+                            IsVisible="{Binding HasLocalJson}"/>
+
+                    <TextBlock Text="{Binding ErrorMessage}" Foreground="Red" TextWrapping="Wrap"
+                               IsVisible="{Binding ErrorMessage, Converter={StaticResource Truthy}}"
+                               Margin="0,4,0,0"/>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </Border>
+</UserControl>

@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using RecipeDownloader.Core.Models;
 using RecipeDownloader.Core.Providers;
 using RecipeDownloader.Core.Storage;
+using RecipeDownloader.App.Platform;
 
 namespace RecipeDownloader.App.ViewModels;
 
@@ -42,14 +43,18 @@ public partial class ProviderViewModel : ObservableObject
     [ObservableProperty]
     private DateTimeOffset? _lastRefreshed;
 
+    private readonly IFileLauncher _launcher;
+
     public ProviderViewModel(
         IRecipeProvider provider,
         RecipeCatalogStore catalogStore,
-        Func<string> getOutputDirectory)
+        Func<string> getOutputDirectory,
+        IFileLauncher launcher)
     {
         _provider = provider;
         _catalogStore = catalogStore;
         _getOutputDirectory = getOutputDirectory;
+        _launcher = launcher;
     }
 
     public async Task LoadCatalogAsync()
@@ -61,7 +66,7 @@ public partial class ProviderViewModel : ObservableObject
         LastRefreshed = catalog.LastRefreshed;
         Recipes.Clear();
         foreach (var recipe in catalog.Recipes.OrderBy(r => r.Name))
-            Recipes.Add(new RecipeViewModel(recipe));
+            Recipes.Add(new RecipeViewModel(recipe, _launcher));
 
         StatusText = $"Loaded {Recipes.Count} recipes from cache (last refreshed: {LastRefreshed:g})";
         CheckExistingDownloads();
@@ -101,7 +106,7 @@ public partial class ProviderViewModel : ObservableObject
             LastRefreshed = catalog.LastRefreshed;
             Recipes.Clear();
             foreach (var recipe in recipes.OrderBy(r => r.Name))
-                Recipes.Add(new RecipeViewModel(recipe));
+                Recipes.Add(new RecipeViewModel(recipe, _launcher));
 
             StatusText = $"Discovered {recipes.Count} recipes";
             CheckExistingDownloads();

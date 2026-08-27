@@ -1,0 +1,53 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="RecipeDownloader.App.Avalonia.Views.RecipeListView">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+
+        <!-- Action bar -->
+        <WrapPanel Grid.Row="0" Margin="0,0,0,8">
+            <Button Content="Discover Recipes" Command="{Binding DiscoverCommand}" Classes="action"/>
+            <Button Content="Download Selected" Command="{Binding DownloadSelectedCommand}" Classes="action"/>
+            <Button Content="Download All" Command="{Binding DownloadAllCommand}" Classes="action"/>
+            <Button Content="Cancel" Command="{Binding CancelOperationCommand}" Classes="action"
+                    IsVisible="{Binding IsBusy}"/>
+            <Border Width="12"/>
+            <Button Content="Select All" Command="{Binding SelectAllCommand}" Classes="action" MinWidth="80"/>
+            <Button Content="Select None" Command="{Binding SelectNoneCommand}" Classes="action" MinWidth="80"/>
+        </WrapPanel>
+
+        <DataGrid Grid.Row="1"
+                  ItemsSource="{Binding Recipes}"
+                  SelectedItem="{Binding SelectedRecipe}"
+                  AutoGenerateColumns="False"
+                  SelectionMode="Single"
+                  GridLinesVisibility="Horizontal"
+                  HeadersVisibility="Column"
+                  RowHeight="28">
+            <DataGrid.Columns>
+                <DataGridCheckBoxColumn Header="" Binding="{Binding IsSelected}" Width="40"/>
+                <DataGridTextColumn Header="Recipe Name" Binding="{Binding Name}" Width="*" IsReadOnly="True"/>
+                <DataGridTextColumn Header="PDF" Binding="{Binding HasPdf}" Width="50" IsReadOnly="True"/>
+                <DataGridTemplateColumn Header="Status" Width="120" IsReadOnly="True">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Status, Converter={StaticResource StatusToText}}"
+                                       Foreground="{Binding Status, Converter={StaticResource StatusToColor}}"
+                                       VerticalAlignment="Center" Margin="4,0"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!-- Status and progress -->
+        <Grid Grid.Row="2" Margin="0,8,0,0" ColumnDefinitions="*,200">
+            <TextBlock Grid.Column="0" Text="{Binding StatusText}" VerticalAlignment="Center"
+                       TextTrimming="CharacterEllipsis"/>
+            <ProgressBar Grid.Column="1" Height="16"
+                         Value="{Binding ProgressValue}" Maximum="{Binding ProgressMax}"
+                         IsIndeterminate="{Binding IsProgressIndeterminate}"
+                         IsVisible="{Binding IsBusy}"/>
+        </Grid>
+    </Grid>
+</UserControl>

@@ -2,7 +2,7 @@ using System.Collections.ObjectModel;
 using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.Win32;
+using RecipeDownloader.App.Platform;
 using RecipeDownloader.Core.Matching;
 using RecipeDownloader.Core.Models;
 using RecipeDownloader.Core.Storage;
@@ -11,11 +11,6 @@ namespace RecipeDownloader.App.ViewModels;
 
 public partial class MainViewModel : ObservableObject
 {
-    private static readonly string SettingsDirectory =
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "RecipeDownloader");
-
-    private static readonly string SettingsPath = Path.Combine(SettingsDirectory, "settings.json");
-
     public ObservableCollection<ProviderViewModel> Providers { get; } = [];
 
     [ObservableProperty]
@@ -40,11 +35,13 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private GroceryListViewModel? _groceryListViewModel;
 
+    private readonly PlatformServices _platform;
     private PantryStore? _pantryStore;
     private List<RecipeData> _allRecipeData = [];
 
-    public MainViewModel()
+    public MainViewModel(PlatformServices platform)
     {
+        _platform = platform;
         LoadSettings();
     }
 
@@ -110,33 +107,30 @@ public partial class MainViewModel : ObservableObject
     private void OnPairSelected(RecipePairMatch pair)
     {
         var pantry = PantryViewModel?.Inventory ?? new PantryInventory();
-        GroceryListViewModel = new GroceryListViewModel();
+        GroceryListViewModel = new GroceryListViewModel(_platform.Clipboard);
         GroceryListViewModel.Generate(pair, pantry);
         ActiveView = "GroceryList";
     }
 
     [RelayCommand]
-    private void BrowseOutputDirectory()
+    private async Task BrowseOutputDirectoryAsync()
     {
-        var dialog = new OpenFolderDialog
-        {
-            Title = "Select Recipe Output Directory",
-            InitialDirectory = Directory.Exists(OutputDirectory) ? OutputDirectory : null
-        };
+        var selected = await _platform.FolderPicker.PickFolderAsync(
+            "Select Recipe Output Directory",
+            Directory.Exists(OutputDirectory) ? OutputDirectory : null);
 
-        if (dialog.ShowDialog() == true)
-        {
-            OutputDirectory = dialog.FolderName;
-            SaveSettings();
-        }
+        if (string.IsNullOrWhiteSpace(selected))
+            return;
+
+        OutputDirectory = selected;
+        SaveSettings();
     }
 
     public string GetOutputDirectory()
     {
         if (string.IsNullOrWhiteSpace(OutputDirectory))
         {
-            OutputDirectory = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Recipes");
+            OutputDirectory = AppPaths.DefaultOutputDirectory;
         }
 
         Directory.CreateDirectory(OutputDirectory);
@@ -147,22 +141,19 @@ public partial class MainViewModel : ObservableObject
     {
         try
         {
-            if (!File.Exists(SettingsPath))
+            if (!File.Exists(AppPaths.SettingsPath))
             {
-                OutputDirectory = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Recipes");
+                OutputDirectory = AppPaths.DefaultOutputDirectory;
                 return;
             }
 
-            var json = File.ReadAllText(SettingsPath);
+            var json = File.ReadAllText(AppPaths.SettingsPath);
             var settings = JsonSerializer.Deserialize<AppSettings>(json);
-            OutputDirectory = settings?.OutputDirectory
-                ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Recipes");
+            OutputDirectory = settings?.OutputDirectory ?? AppPaths.DefaultOutputDirectory;
         }
-        catch
+        catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
         {
-            OutputDirectory = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Recipes");
+            OutputDirectory = AppPaths.DefaultOutputDirectory;
         }
     }
 
@@ -170,12 +161,12 @@ public partial class MainViewModel : ObservableObject
     {
         try
         {
-            Directory.CreateDirectory(SettingsDirectory);
+            Directory.CreateDirectory(AppPaths.DataDirectory);
             var json = JsonSerializer.Serialize(new AppSettings { OutputDirectory = OutputDirectory },
                 new JsonSerializerOptions { WriteIndented = true });
-            File.WriteAllText(SettingsPath, json);
+            File.WriteAllText(AppPaths.SettingsPath, json);
         }
-        catch
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             // Settings save failure is non-critical
         }

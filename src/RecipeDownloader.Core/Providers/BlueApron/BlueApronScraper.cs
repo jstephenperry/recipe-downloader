@@ -1,8 +1,8 @@
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.Xml;
 using HtmlAgilityPack;
 using RecipeDownloader.Core.Models;
+using RecipeDownloader.Core.Providers.Shared;
 
 namespace RecipeDownloader.Core.Providers.BlueApron;
 
@@ -16,19 +16,14 @@ public static class BlueApronScraper
     {
         var recipes = new List<Recipe>();
 
-        using var reader = XmlReader.Create(xmlStream);
-        while (reader.Read())
+        foreach (var loc in SitemapReader.ReadLocations(xmlStream))
         {
-            if (reader.NodeType != XmlNodeType.Element || reader.LocalName != "loc")
-                continue;
-
-            var loc = reader.ReadElementContentAsString();
-            if (string.IsNullOrEmpty(loc) || !loc.Contains("/recipes/"))
+            if (!loc.Contains("/recipes/"))
                 continue;
 
             var slug = loc.Split('/').Last();
-            var name = slug.Replace("-", " ");
-            name = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(name);
+            var name = System.Globalization.CultureInfo.CurrentCulture.TextInfo
+                .ToTitleCase(slug.Replace("-", " "));
             recipes.Add(new Recipe(name, loc));
         }
 
@@ -364,27 +359,9 @@ public static class BlueApronScraper
     }
 
     /// <summary>
-    /// Converts HTML-formatted instruction text to clean plain text.
-    /// Blue Apron embeds &lt;b&gt; tags around ingredient names and &lt;br&gt; tags
-    /// for line breaks within their instruction fields.
+    /// Converts HTML-formatted instruction text to clean plain text. Blue Apron embeds
+    /// &lt;b&gt; tags around ingredient names and &lt;br&gt; tags for line breaks.
     /// </summary>
-    private static string StripHtml(string html)
-    {
-        if (string.IsNullOrWhiteSpace(html))
-            return html;
-
-        // Use HtmlAgilityPack to properly decode and extract text
-        var doc = new HtmlDocument();
-        doc.LoadHtml(html);
-        var text = doc.DocumentNode.InnerText;
-
-        // HtmlDecode handles &amp; &lt; etc.
-        text = System.Net.WebUtility.HtmlDecode(text);
-
-        // Collapse multiple whitespace/newlines into single spaces
-        text = Regex.Replace(text, @"\s+", " ").Trim();
-
-        return text;
-    }
+    private static string StripHtml(string html) => RecipeValueParser.StripHtml(html);
 
 }

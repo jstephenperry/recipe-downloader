@@ -9,10 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <ProjectReference Include="..\RecipeDownloader.App.Shared\RecipeDownloader.App.Shared.csproj" />
     <ProjectReference Include="..\RecipeDownloader.Core\RecipeDownloader.Core.csproj" />
   </ItemGroup>
 

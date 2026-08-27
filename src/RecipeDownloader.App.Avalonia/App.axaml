@@ -1,0 +1,58 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="clr-namespace:RecipeDownloader.App.Avalonia.Converters"
+             x:Class="RecipeDownloader.App.Avalonia.App"
+             RequestedThemeVariant="Light">
+
+    <Application.Resources>
+        <converters:TruthyConverter x:Key="Truthy"/>
+        <converters:NotNullConverter x:Key="NotNull"/>
+        <converters:StringEqualsConverter x:Key="StringEquals"/>
+        <converters:DownloadStatusToTextConverter x:Key="StatusToText"/>
+        <converters:DownloadStatusToColorConverter x:Key="StatusToColor"/>
+    </Application.Resources>
+
+    <Application.Styles>
+        <FluentTheme/>
+        <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
+
+        <!--
+          Avalonia styles are selector-based rather than keyed by TargetType, so the WPF
+          named styles (ActionButton, LinkButton, SectionHeader) become style classes
+          applied with Classes="...".
+        -->
+        <Style Selector="Button.action">
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="Margin" Value="4,2"/>
+            <Setter Property="MinWidth" Value="100"/>
+        </Style>
+
+        <Style Selector="Button.link">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="#1E90FF"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <TextBlock Text="{TemplateBinding Content}"
+                               TextDecorations="Underline"
+                               TextWrapping="Wrap"
+                               Foreground="{TemplateBinding Foreground}"
+                               Padding="{TemplateBinding Padding}"/>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+
+        <Style Selector="TextBlock.sectionHeader">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,8,0,4"/>
+        </Style>
+
+        <Style Selector="TextBlock.caption">
+            <Setter Property="Foreground" Value="Gray"/>
+        </Style>
+    </Application.Styles>
+</Application>

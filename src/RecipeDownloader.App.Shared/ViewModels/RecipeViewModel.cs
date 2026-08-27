@@ -1,6 +1,6 @@
-using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using RecipeDownloader.App.Platform;
 using RecipeDownloader.Core.Models;
 
 namespace RecipeDownloader.App.ViewModels;
@@ -32,9 +32,12 @@ public partial class RecipeViewModel : ObservableObject
     public bool HasLocalFile => !string.IsNullOrEmpty(LocalFilePath) && File.Exists(LocalFilePath);
     public bool HasLocalJson => !string.IsNullOrEmpty(LocalJsonPath) && File.Exists(LocalJsonPath);
 
-    public RecipeViewModel(Recipe recipe)
+    private readonly IFileLauncher _launcher;
+
+    public RecipeViewModel(Recipe recipe, IFileLauncher launcher)
     {
         Recipe = recipe;
+        _launcher = launcher;
         _status = HasPdf ? DownloadStatus.NotDownloaded : DownloadStatus.NoPdf;
     }
 
@@ -58,27 +61,27 @@ public partial class RecipeViewModel : ObservableObject
     [RelayCommand]
     private void OpenInBrowser()
     {
-        Process.Start(new ProcessStartInfo(SourceUrl) { UseShellExecute = true });
+        _launcher.Open(SourceUrl);
     }
 
     [RelayCommand]
     private void OpenPdfInBrowser()
     {
         if (PdfUrl is not null)
-            Process.Start(new ProcessStartInfo(PdfUrl) { UseShellExecute = true });
+            _launcher.Open(PdfUrl);
     }
 
     [RelayCommand]
     private void OpenLocalFile()
     {
         if (LocalFilePath is not null && File.Exists(LocalFilePath))
-            Process.Start(new ProcessStartInfo(LocalFilePath) { UseShellExecute = true });
+            _launcher.Open(LocalFilePath);
     }
 
     [RelayCommand]
     private void OpenLocalJson()
     {
         if (LocalJsonPath is not null && File.Exists(LocalJsonPath))
-            Process.Start(new ProcessStartInfo(LocalJsonPath) { UseShellExecute = true });
+            _launcher.Open(LocalJsonPath);
     }
 }

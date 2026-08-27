@@ -1,32 +1,18 @@
-<UserControl x:Class="RecipeDownloader.App.Views.GroceryListView"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:converters="clr-namespace:RecipeDownloader.App.Converters"
-             xmlns:vm="clr-namespace:RecipeDownloader.App.ViewModels;assembly=RecipeDownloader.App.Shared">
-    <UserControl.Resources>
-        <converters:BoolToVisibilityConverter x:Key="BoolToVis"/>
-    </UserControl.Resources>
+             x:Class="RecipeDownloader.App.Avalonia.Views.GroceryListView">
 
-    <Grid Margin="10">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
+    <Grid Margin="10" RowDefinitions="Auto,Auto,*,Auto,Auto">
 
-        <TextBlock Grid.Row="0" FontSize="18" Style="{StaticResource SectionHeader}">
-            <Run Text="Grocery List"/>
-        </TextBlock>
+        <TextBlock Grid.Row="0" Text="Grocery List" FontSize="18" Classes="sectionHeader"/>
+
         <TextBlock Grid.Row="1" TextWrapping="Wrap" Foreground="Gray" Margin="0,0,0,10">
             <Run Text="{Binding Recipe1Title, Mode=OneWay}"/>
             <Run Text=" + "/>
             <Run Text="{Binding Recipe2Title, Mode=OneWay}"/>
         </TextBlock>
 
-        <!-- Grouped grocery items -->
-        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+        <ScrollViewer Grid.Row="2">
             <StackPanel>
                 <ItemsControl ItemsSource="{Binding Groups}">
                     <ItemsControl.ItemTemplate>
@@ -43,24 +29,18 @@
                                 <ItemsControl ItemsSource="{Binding Items}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <Border Padding="8,4,8,4" BorderBrush="#EEE" BorderThickness="0,0,0,1">
-                                                <Grid>
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="28"/>
-                                                        <ColumnDefinition Width="*"/>
-                                                        <ColumnDefinition Width="100"/>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                    </Grid.ColumnDefinitions>
-
+                                            <Border Padding="8,4" BorderBrush="#EEE" BorderThickness="0,0,0,1">
+                                                <Grid ColumnDefinitions="28,*,100,Auto">
                                                     <CheckBox Grid.Column="0" IsChecked="{Binding IsChecked}"
                                                               VerticalAlignment="Center"/>
                                                     <TextBlock Grid.Column="1" Text="{Binding Name}"
-                                                               VerticalAlignment="Center"/>
+                                                               TextWrapping="Wrap" VerticalAlignment="Center"/>
                                                     <TextBlock Grid.Column="2" Text="{Binding QuantityDisplay}"
                                                                VerticalAlignment="Center" Foreground="Gray"/>
                                                     <Border Grid.Column="3" Background="#C8E6C9" CornerRadius="3"
                                                             Padding="6,2" Margin="4,0,0,0"
-                                                            Visibility="{Binding IsShared, Converter={StaticResource BoolToVis}}">
+                                                            VerticalAlignment="Center"
+                                                            IsVisible="{Binding IsShared}">
                                                         <TextBlock Text="shared" FontSize="10" Foreground="#2E7D32"/>
                                                     </Border>
                                                 </Grid>
@@ -73,16 +53,15 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
 
-                <!-- On-hand section -->
-                <StackPanel Visibility="{Binding OnHandItems.Count, Converter={StaticResource BoolToVis}}"
-                            Margin="0,8,0,0">
+                <StackPanel Margin="0,8,0,0"
+                            IsVisible="{Binding OnHandItems.Count, Converter={StaticResource Truthy}}">
                     <Border Background="#FFF3E0" Padding="8,4" Margin="0,0,0,4">
                         <TextBlock FontWeight="SemiBold" FontSize="13" Text="Already On Hand"/>
                     </Border>
                     <ItemsControl ItemsSource="{Binding OnHandItems}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Border Padding="8,4,8,4" BorderBrush="#EEE" BorderThickness="0,0,0,1">
+                                <Border Padding="8,4" BorderBrush="#EEE" BorderThickness="0,0,0,1">
                                     <TextBlock Text="{Binding Name}" Foreground="Gray"
                                                TextDecorations="Strikethrough"/>
                                 </Border>
@@ -94,8 +73,7 @@
         </ScrollViewer>
 
         <WrapPanel Grid.Row="3" Margin="0,10,0,0">
-            <Button Content="Copy to Clipboard" Command="{Binding CopyToClipboardCommand}"
-                    Style="{StaticResource ActionButton}"/>
+            <Button Content="Copy to Clipboard" Command="{Binding CopyToClipboardCommand}" Classes="action"/>
         </WrapPanel>
 
         <TextBlock Grid.Row="4" Text="{Binding SummaryText}" Margin="0,6,0,0"
